@@ -21,17 +21,7 @@ Route::group([ 'prefix' => 'v1'], function () {
 
     Route::post('login', 'API\AuthController@login');
 
-    Route::get('user_details/{id}', 'API\AuthController@user_details');
-
     Route::post('signup', 'API\AuthController@signup');
-
-    Route::post('signupCompany', 'API\AuthController@signupCompany');
-
-    Route::get('jobs', 'API\AuthController@jobs');
-
-    Route::get('attributes', 'API\AuthController@getAttributes');
-
-    Route::post('searchJobs', 'API\AuthController@searchJobs');
 
     Route::post('reset', 'API\AuthController@reset');
 
@@ -45,12 +35,6 @@ Route::group([ 'prefix' => 'v1'], function () {
         Route::get('user', 'API\AuthController@user');
 
         Route::post('updateProfile', 'API\AuthController@updateProfile');
-
-        Route::get('job/{id}', 'API\AuthController@job');
-
-        Route::post('applyJob', 'API\AuthController@applyJob');
-
-        Route::get('myApplications', 'API\AuthController@myApplications');
 
 
     });

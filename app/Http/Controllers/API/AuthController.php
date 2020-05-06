@@ -29,11 +29,8 @@ class AuthController extends Controller
     public function signup(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'type' => 'required',
-            'full_name' => 'required|string',
             'email' => 'required|string|email|unique:users',
             'username' => 'required|string|unique:users',
-            'phone' => 'required',
             'password' => 'required|string',
             'cpassword' => 'required|same:password'
 
@@ -43,21 +40,16 @@ class AuthController extends Controller
         }
 
         $user = new User([
-            'type' => $request->type,
-            'name' => $request->full_name,
-            'phone' => $request->phone,
-            'phone2' => $request->phone2,
+            'type' => 0,
+            'name' => $request->username,
             'username' => $request->username,
             'email' => $request->email,
             'password' => bcrypt($request->password)
         ]);
         $user->save();
 
-        if($request->type == 0){
-            $user->attachRole(1);
-        }else{
-            $user->attachRole(2);
-        }
+        $user->attachRole(1);
+        
 
         $credential = new Credential([
             'user_id' => $user->id,
@@ -69,14 +61,6 @@ class AuthController extends Controller
     }
 
 
-    public function user_details($id)
-    {
-        $user= User::where('id',$id)->first();
-
-        return response()->json([
-            'user' => $user
-        ]);
-    }
 
     /**
      * Login user and create token
@@ -149,94 +133,9 @@ class AuthController extends Controller
     {
         $user = auth()->user();
 
-        $credentials = Credential::where('user_id', $user->id)->first();
-
-        $data = [
-            'name' => $user->name ? $user->name : 'N/A',
-            'gender' => $user->gender  ? $user->gender : 'N/A',
-            'dob' => $user->dob ? $user->dob : '01/01/2020',
-            'phone' => $user->phone ? $user->phone : 'N/A',
-            'phone2' => $user->phone2 ? $user->phone2 : 'N/A',
-            'country' => $user->country ? $user->country : 'N/A',
-            'state' => $user->state ? $user->state : 'N/A',
-            'username' => $user->username ? $user->username : 'N/A',
-            'facebook' => $user->facebook ? $user->facebook : 'N/A',
-            'twitter' => $user->twitter ? $user->twitter : 'N/A',
-            'linkd' => $user->linkd ? $user->linkd : 'N/A',
-            'insta' => $user->insta ? $user->insta : 'N/A',
-            'email' => $user->email,
-            'staff_size' => $user->staff_size ? $user->staff_size : 'N/A',
-            'sector' => $user->sector ? $user->sector : 'N/A',
-            'industry' => $user->industry ? $user->industry : 'N/A',
-            'years' => $user->years ? $user->years : 'N/A',
-            'qualification' => $credentials->qualification ? $credentials->qualification : 'N/A',
-            'examing_body' => $credentials->examing_body ? $credentials->examing_body : 'N/A',
-            'subjects' => $credentials->subjects ? unserialize($credentials->subjects) : null,
-            'o_level_passed' => $credentials->o_level_passed ? $credentials->o_level_passed : 'N/A',
-            'skills' => $credentials->skills ? $credentials->skills : 'N/A',
-            'training_courses' => $credentials->training_courses ? $credentials->training_courses : 'N/A',
-            'career_path' => $credentials->career_path ? $credentials->career_path : 'N/A',
-            'degree' => $credentials->degree ? unserialize($credentials->degree) : null,
-            'employment' => $credentials->employment ? unserialize($credentials->employment) : null
-
-        ];
-
-        $profile_check = collect($data)->contains('N/A');
-
-        $profile_incomplete = [
-            'profile_incomplete' => $profile_check
-        ];
-
-        array_push($data, $profile_incomplete);
-        return response()->json($data);
+        return response()->json($user);
     }
 
-    public function signupCompany(Request $request)
-    {
-
-        $validator = Validator::make($request->all(), [
-            'company_name' => 'required|string',
-            'email' => 'required|string|email|unique:users',
-            'country' => 'required',
-            'state' => 'required',
-            'staff_size' => 'required',
-            'sector' => 'required',
-            'industry' => 'required',
-            'years' => 'required',
-            'contact_person1' => 'required',
-            'contact_person2' => 'required',
-            'username' => 'required|string|unique:users',
-            'password' => 'required|string',
-            'description' => 'required',
-        ]);
-        if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors()], 401);
-        }
-
-        $user = new User([
-            'name' => $request->company_name,
-            'type' => '1',
-            'phone' => $request->phone,
-            'country' => $request->country,
-            'state' => $request->state,
-            'username' => $request->username,
-            'email' => $request->email,
-            'password' => bcrypt($request->password),
-            'staff_size' => $request->staff_size,
-            'sector' => $request->sector,
-            'industry' => $request->industry,
-            'years' => $request->years,
-            'contact_person1' => serialize($request->contact_person1),
-            'contact_person2' => serialize($request->contact_person2),
-            'description' => $request->description,
-            'cac_number' => $request->cac_number,
-        ]);
-        $user->save();
-        $user->attachRole(2);
-        return response()->json([
-            'message' => 'Successfully created Company Account'
-        ]);
-    }
 
     public function updateProfile(Request $request)
     {
@@ -283,137 +182,6 @@ class AuthController extends Controller
         }
     }
 
-    public function jobs()
-    {
-        $currentDate = date('Y-m-d');
-        $jobs = Job::with('cleanCompany')->whereDate('end', '>=', $currentDate)->orderby('id','desc')->get();
-
-        $data = [
-            'jobs' => $jobs,
-        ];
-
-        return response()->json(['jobs' => $jobs], 200);
-    }
-
-    public function job($id)
-    {
-        try {
-            $job = Job::with('cleanCompany')->where('id',$id)->first();
-
-            $data = [
-                'job' => $job,
-            ];
-
-            return response()->json(['jobs' => $job], 200);
-
-        }catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 401);
-        }
-    }
-
-    public function applyJob(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'job_id' => 'required',
-
-        ]);
-        if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors()], 401);
-        }
-
-        try {
-            $user = auth()->user();
-
-            $check = Application::where('job_id', $request->job_id)->where('user_id',$user->id)->count();
-
-            if($check >= 1){
-                return response()->json(['error' => 'You have applied for this Job Already'], 401);
-            }
-
-            $user = auth()->user();
-
-            $job = new Application([
-                'user_id' => $user->id,
-                'job_id' => $request->job_id,
-                'note' => $request->note,
-            ]);
-            $job->save();
-
-
-            return response()->json(['jobs' => 'Your Job Application was successful'], 200);
-
-        }catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 401);
-        }
-    }
-
-    public function applications()
-    {
-        try {
-            $job = Application::with('user', 'job')->orderby('id','desc')->paginate(10);
-
-            $data = [
-                'job' => $job,
-            ];
-
-            return response()->json(['jobs' => $job], 200);
-
-        }catch (\Exception $e) {
-            $message =  $e->getMessage();
-             Alert::error('Error', $message);
-        }
-    }
-
-    public function myApplications()
-    {
-        try {
-            $user = auth()->user();
-
-            $applications = Application::with('job')->where('user_id', $user->id)->orderby('id','desc')->get();
-
-            $data = [
-                'applications' => $applications,
-            ];
-
-            return response()->json(['data' => $data], 200);
-
-        }catch (\Exception $e) {
-            $message =  $e->getMessage();
-             Alert::error('Error', $message);
-        }
-    }
-
-    public function getAttributes()
-    {
-        $attributes = [
-         'title', 'location', 'type', 'experience', 'salary',
-        ];
-
-        return response()->json($attributes);
-    }
-
-    public function searchJobs(Request $request)
-    {
-
-        $validator = Validator::make($request->all(), [
-            'query' => 'required|string',
-            'category' => 'required|string',
-        ]);
-        if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors()], 401);
-        }
-
-        $currentDate = date('Y-m-d');
-
-        $search = Job::with('cleanCompany')->where( $request->category, 'like', '%'.$request->get('query').'%' )->whereDate('end', '>=', $currentDate)->orderby('id','desc')->get();
-
-        dd($search);
-        $data = [
-            'jobs' => $search,
-        ];
-
-        return response()->json($data);
-    }
 
     public function reset(Request $request)
     {
