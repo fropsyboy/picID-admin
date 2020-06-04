@@ -47,6 +47,7 @@
                                 <th>Email</th>
                                 <th>Amount</th>
                                 <th>Status</th>
+                                <th>Date</th>
                                 <th>Created On</th>
                             </tr>
                         </thead>
@@ -71,6 +72,9 @@
                                     @else
                                     <span class="btn btn-danger btn-sm">{{$item->status}}</span>
                                     @endif
+                            </td>
+                            <td>
+                            {{ Carbon\Carbon::parse($item->created_at)->isoFormat('dddd MMMM Do Y') }}
                             </td>
                             <td>
                             {{ Carbon\Carbon::parse($item->created_at)->format('h:i:s:A') }}

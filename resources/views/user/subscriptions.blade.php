@@ -47,6 +47,7 @@
                                 <th>Email</th>
                                 <th>Amount</th>
                                 <th>Status</th>
+                                <th>Date</th>
                                 <th>Month</th>
                                 <th>Created On</th>
                             </tr>
@@ -74,7 +75,10 @@
                                     @endif
                             </td>
                             <td>
-                            {{ Carbon\Carbon::parse($item->created_at)->format('M') }}
+                            {{ Carbon\Carbon::parse($item->created_at)->isoFormat('dddd Do Y') }}
+                            </td>
+                            <td>
+                            {{ Carbon\Carbon::parse($item->created_at)->isoFormat('MMMM') }}
                             </td>
                             <td>
                             {{ Carbon\Carbon::parse($item->created_at)->format('h:i:s:A') }}
