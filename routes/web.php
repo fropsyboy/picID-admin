@@ -75,3 +75,5 @@ Route::get('/feedback', 'HomeController@feedback')->name('feedback');
 Route::get('/transactions', 'HomeController@transactions')->name('transactions');
 
 Route::get('/subscriptions', 'HomeController@subscriptions')->name('subscriptions');
+
+
