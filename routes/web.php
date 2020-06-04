@@ -69,3 +69,9 @@ Route::get('/reset_get', 'PagesController@reset_get')->name('reset_get');
 Route::post('/reset_get', 'PagesController@resetPassword')->name('update_password');
 
 Route::post('/edit_prodile', 'HomeController@editprodile')->name('editProfile');
+
+Route::get('/feedback', 'HomeController@feedback')->name('feedback');
+
+Route::get('/transactions', 'HomeController@transactions')->name('transactions');
+
+Route::get('/subscriptions', 'HomeController@subscriptions')->name('subscriptions');

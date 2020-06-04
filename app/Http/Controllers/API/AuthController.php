@@ -13,6 +13,15 @@ use App\Job;
 use App\Application;
 use Illuminate\Support\Str;
 use Mail;
+use App\Feedback;
+use Illuminate\Support\Facades\Storage;
+use App\Image;
+use Aws\Rekognition\RekognitionClient;
+use Stripe;
+use App\Transaction;
+use App\Subscription;
+
+
 
 class AuthController extends Controller
 {
@@ -30,13 +39,12 @@ class AuthController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'email' => 'required|string|email|unique:users',
-            'username' => 'required|string|unique:users',
+            'username' => 'required|string',
             'password' => 'required|string',
-            'cpassword' => 'required|same:password'
 
         ]);
         if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors()], 401);
+            return response()->json(['error' => $validator->errors(), 'error' => true], 200);
         }
 
         $user = new User([
@@ -56,7 +64,8 @@ class AuthController extends Controller
         ]);
         $credential->save();
         return response()->json([
-            'message' => 'Successfully created User Account'
+            'message' => 'Successfully created User Account',
+            'error' => false
         ]);
     }
 
@@ -79,21 +88,23 @@ class AuthController extends Controller
             'password' => 'required|string',
         ]);
         if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors()], 401);
+            return response()->json(['message' => $validator->errors(), 'error' => true], 200);
         }
         $credentials = request(['email', 'password']);
 
         if(!Auth::attempt($credentials))
             return response()->json([
-                'message' => 'Unauthorized'
-            ], 401);
+                'message' => 'Unauthorized',
+                'error' => true
+            ], 200);
 
         $user = $request->user();
 
         if($user->type != 0){
             return response()->json([
-                'message' => 'You are not a System User, Please try and Login on the company Portal'
-            ], 400);
+                'message' => 'You are not a System User, Please try and Login on the company Portal',
+                'error' => true
+            ], 200);
         }
 
 
@@ -102,6 +113,8 @@ class AuthController extends Controller
 
         $token->save();
         return response()->json([
+            'error' => false,
+            'status' => $user->sub,
             'access_token' => $tokenResult->accessToken,
             'access' => $user->type,
             'token_type' => 'Bearer',
@@ -133,7 +146,7 @@ class AuthController extends Controller
     {
         $user = auth()->user();
 
-        return response()->json($user);
+        return response()->json(['user' => $user, 'error' => false]);
     }
 
 
@@ -217,30 +230,198 @@ class AuthController extends Controller
         return response()->json(['response' => 'A reset link has been sent to your email'], 200);
     }
 
-    public function resetPassword(Request $request)
+    public function passwordUpdate(Request $request)
     {
+        $user = auth()->user();
 
         $validator = Validator::make($request->all(), [
-            'email' => 'required|string',
-            'code' => 'required|string',
             'password' => 'required|string',
-            'cpassword' => 'required|same:password'
         ]);
         if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors()], 401);
+            return response()->json(['error' => $validator->errors(), 'error' => true], 200);
         }
 
-        $search = User::where('email', $request->email)->where('reset',  $request->code)->count();
-
-        if ($search > 0){
-            User::where('email', $request->email)->update([
+            User::where('email', $user->email)->update([
                 'password' => bcrypt($request->password),
             ]);
-            return response()->json(['response' => 'Your password reset was successful '], 200);
+            return response()->json(['response' => 'Your password reset was successful ', 'error' => false], '200');
+
+    }
+
+    public function addFeedback(Request $request)
+    {
+        $user = auth()->user();
+
+        $validator = Validator::make($request->all(), [
+            'message' => 'required|string',
+        ]);
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors(), 'error' => true], 200);
         }
 
-        return response()->json(['response' => 'Please check your email and the code sent to your email again '], 400);
+        $user = new Feedback([
+            'user_id' => $user->id,
+            'username' => $user->username,
+            'email' => $user->email,
+            'message' => $request->message
+        ]);
+        $user->save();
 
+            return response()->json(['response' => 'Your feedback has been saved ', 'error' => false], 200);
+
+    }
+
+    public function snapImage(Request $request)
+    {
+        $user = auth()->user();
+        $fileLink = env("FILELINK");
+        $uniqueName =  sha1(time());
+        $arr = [];
+
+        $client = new RekognitionClient([
+            'region'    => env("AWS_DEFAULT_REGION"),
+            'version'   => 'latest'
+        ]);
+
+
+        $imagez = str_replace('data:image/jpeg;base64,', '', $request->file);
+        $imagez = str_replace(' ', '+', $imagez);
+        $bytes = base64_decode($imagez);
+
+
+        $results = $client->detectLabels([
+            'Image'         => ['Bytes' => $bytes], 
+            'MinConfidence' => 50
+        ]);
+
+        foreach($results as $item)
+            {
+                array_push($arr, $item);
+            break;
+            }
+
+            if (count($arr) > 0){
+
+
+                $filename = $fileLink.$uniqueName;
+
+                $file = Storage::disk('s3')->put('/'.$uniqueName, base64_decode($imagez));
+
+                if($file = true){
+
+                    // $image = new Image([
+                    //     'user_id' => $user->id,
+                    //     'path' => $filename,
+                    //     'type' => $request->type,
+                    // ]);
+                    // $image->save();
+
+                    return response()->json(['message' =>  $arr, 'image_id' => $filename,  'error' => false, 'type' => $request->type], 200);
+                }else{
+
+                    return response()->json(['message' => 'Error uploading image to s3', 'error' => true], 200);
+                }
+            }else{
+                return response()->json(['message' => 'Sorry, We caould not recorgnize this image', 'error' => true], 200);
+            }
+
+    }
+
+    public function saveResponse(Request $request)
+    {
+        $user = auth()->user();
+
+        $image = new Image([
+                        'user_id' => $user->id,
+                        'path' => $request->image,
+                        'type' => $request->type,
+                        'title' => $request->name,
+                        'body' => $request->source,
+                    ]);
+                    $image->save();
+
+        return response()->json(['message' =>  $arr, 'image_id' => $filename,  'error' => false, 'type' => $request->type], 200);
+
+    }
+
+    public function discover()
+    {
+        $user = auth()->user();
+
+        $image = Image::where('user_id', $user->id)->orderby('id', 'desc')->get();
+
+        return response()->json(['images' =>  $image], 200);
+
+    }
+
+    public function explore()
+    {
+
+        $image = Image::orderby('id', 'desc')->get();
+
+        return response()->json(['images' =>  $image], 200);
+
+    }
+
+    public function stripePost(Request $request)
+    {
+        try {
+
+            $user = auth()->user();
+
+        Stripe\Stripe::setApiKey(env('STRIPE_SECRET'));
+
+        $customer =  Stripe\Customer::create([
+            'email' => "sam@gmail.com",
+            'source'  => $request->postStripeToken,
+        ]);
+
+
+        $payment = Stripe\Charge::create ([
+                "amount" => 4.99 * 100,
+                "currency" => "usd",
+                "description" => "Test payment from itsolutionstuff.com.",
+                "customer" => $customer->id, 
+        ]);
+
+        $trans =  new Transaction([
+            'user_id' => $user->id,
+            'username' => $user->username,
+            'email' => $user->email,
+            'status' => 'Successful',
+            'amount' => 4.99,
+        ]);
+        $trans->save();
+
+        $sub =  new Subscription([
+            'user_id' => $user->id,
+            'username' => $user->username,
+            'email' => $user->email,
+            'status' => 'Successful',
+            'amount' => 4.99,
+        ]);
+
+        $sub->save();
+
+        User::where('id', $user->id)->update([
+            'sub' => 'Subscribed',
+            'subDate' => Carbon::now(),
+        ]);
+          
+        return response()->json([ 'error' => false, 'message' =>  'Your payment was successful'], 200);
+
+    }catch (\Exception $e) {
+
+        $trans =  new Transaction([
+            'user_id' => $user->id,
+            'username' => $user->username,
+            'email' => $user->email,
+            'status' => 'Failed',
+            'amount' => 4.99,
+        ]);
+        $trans->save();
+        return response()->json([ 'error' => true, 'message' => 'There was an issue processing your payment please check your card details and try again'], 200);
+        }
     }
 
 

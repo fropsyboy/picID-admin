@@ -29,7 +29,7 @@
                 <p class="text-muted">FREE TRIAL</p>
             @endslot
             @slot('count')
-                <h2 class="counter text-cyan">{{$applicantsCount}}</h2>
+                <h2 class="counter text-cyan">{{$free}}</h2>
             @endslot
             <div class="progress-bar bg-cyan" role="progressbar" style="width: 85%; height: 6px;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
         @endcomponent

@@ -23,7 +23,7 @@ class User extends Authenticatable
         'name', 'email', 'password', 'm_name', 'l_name', 'gender', 'dob', 'phone', 'phone2', 'type',
         'country', 'state', 'username', 'facebook', 'twitter', 'linkd', 'insta', 'others', 
         'contact_person1', 'contact_person2', 'years', 'sector', 'staff_size', 'description', 
-        'cac_number', 'industry', 'image_path', 'status'
+        'cac_number', 'industry', 'image_path', 'status', 'sub', 'subDate'
     ];
 
     /**

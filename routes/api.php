@@ -36,6 +36,20 @@ Route::group([ 'prefix' => 'v1'], function () {
 
         Route::post('updateProfile', 'API\AuthController@updateProfile');
 
+        Route::post('passwordUpdate', 'API\AuthController@passwordUpdate');
+
+        Route::post('addFeedback', 'API\AuthController@addFeedback');
+
+        Route::post('uplodas', 'API\AuthController@snapImage');
+
+        Route::post('saveResponse', 'API\AuthController@saveResponse');
+
+        Route::get('discover', 'API\AuthController@discover');
+
+        Route::get('explore', 'API\AuthController@explore');
+
+        Route::post('postStripe', 'API\AuthController@stripePost');
+
 
     });
 });

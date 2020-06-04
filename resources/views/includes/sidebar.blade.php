@@ -34,14 +34,17 @@
                 <li class="nav-small-cap">--- ADMIN</li>
                 <li> <a class="waves-effect waves-dark" href="{{route('dashboard')}}" aria-expanded="false"><i class="icon-speedometer"></i><span class="hide-menu">Dashboard</span></a>
                 </li>
-                <li> <a class="waves-effect waves-dark" href="{{route('companies')}}" aria-expanded="false"><i class="ti-layout-accordion-merged"></i><span class="hide-menu">Subscribers</span></a>
+                <li> <a class="waves-effect waves-dark" href="{{route('subscriptions')}}" aria-expanded="false"><i class="ti-layout-accordion-merged"></i><span class="hide-menu">Subscribers</span></a>
                     </li>
                 <li> <a class="waves-effect waves-dark" href="{{route('admins')}}" aria-expanded="false"><i class="far fa-circle text-danger"></i><span class="hide-menu">Admins</span></a>
                     </li>
                 <li> <a class="waves-effect waves-dark" href="{{route('applicants')}}" aria-expanded="false"><i class="ti-layout-media-right-alt"></i><span class="hide-menu">Users</span></a>
                 </li>
 
-                <li> <a class="waves-effect waves-dark" href="{{route('empty')}}" aria-expanded="false"><i class="ti-receipt"></i><span class="hide-menu">Transactions</span></a>
+                <li> <a class="waves-effect waves-dark" href="{{route('transactions')}}" aria-expanded="false"><i class="ti-receipt"></i><span class="hide-menu">Transactions</span></a>
+                </li>
+
+                <li> <a class="waves-effect waves-dark" href="{{route('feedback')}}" aria-expanded="false"><i class="fa fa-podcast"></i><span class="hide-menu">Feedbacks</span></a>
                 </li>
 
                     

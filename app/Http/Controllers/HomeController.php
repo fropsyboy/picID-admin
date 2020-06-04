@@ -11,6 +11,10 @@ use Illuminate\Support\Facades\Auth;
 use Session;
 use Illuminate\Support\Facades\Hash;
 use App\Application;
+use App\Feedback;
+use App\Transaction;
+use App\Subscription;
+
 
 class HomeController extends Controller
 {
@@ -35,12 +39,14 @@ class HomeController extends Controller
 
         $admin = User::where('type',2)->count();
 
+        $free = User::where('type',0)->where('sub', 'trial')->count();
+
         // dd($user );
 
             $data = [
                 'applications' => [],
                 'applicationsCount' => 0,
-                'applicantsCount' => 0,
+                'free' => $free ,
                 'user' => $user,
                 'companies' => $admin,
             ];
@@ -51,7 +57,6 @@ class HomeController extends Controller
         
 
     }
-
 
 
     public function profile()
@@ -329,6 +334,39 @@ class HomeController extends Controller
 
              return back();
           }
+    }
+
+    public function feedback()
+    {
+        $feedbacks = Feedback::orderby('id','desc')->get();
+
+        $data = [
+            'applicants' => $feedbacks,
+        ];
+
+        return view('user.feedback', $data);
+    }
+
+    public function transactions()
+    {
+        $transactions = Transaction::orderby('id','desc')->get();
+
+        $data = [
+            'transactions' => $transactions,
+        ];
+
+        return view('user.transactions', $data);
+    }
+
+    public function subscriptions()
+    {
+        $subscriptions = Subscription::orderby('id','desc')->get();
+
+        $data = [
+            'subscriptions' => $subscriptions,
+        ];
+
+        return view('user.subscriptions', $data);
     }
 
 
