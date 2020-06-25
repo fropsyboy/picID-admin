@@ -27,6 +27,9 @@ Route::group([ 'prefix' => 'v1'], function () {
 
     Route::post('resetPassword', 'API\AuthController@resetPassword');
 
+    Route::post('NewpasswordUpdate', 'API\AuthController@NewpasswordUpdate');
+
+
 
     Route::group(['middleware' => 'auth:api'], function() {
 
