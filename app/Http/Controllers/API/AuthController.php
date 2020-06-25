@@ -231,7 +231,7 @@ class AuthController extends Controller
         ]);
 
         $to_name = $request->email;
-        $to_email = 'jnuary9@gmail.com';
+        $to_email = "jnuary9@gmail.com";
         $data = array('name'=> $to_name, "body" => "Please use this code to reset the password ".$rand);
 
         Mail::send('emails.mail', $data, function($message) use ($to_name, $to_email) {
