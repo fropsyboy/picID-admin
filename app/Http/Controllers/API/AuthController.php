@@ -241,7 +241,7 @@ class AuthController extends Controller
 
         
 
-        return response()->json(['response' => 'A reset link has been sent to your email'], 200);
+        return response()->json(['error' => false, 'message' => 'A reset link has been sent to your email'], 200);
     }
 
     public function passwordUpdate(Request $request)
