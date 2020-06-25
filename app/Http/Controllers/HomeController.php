@@ -14,6 +14,8 @@ use App\Application;
 use App\Feedback;
 use App\Transaction;
 use App\Subscription;
+use Mail;
+
 
 
 class HomeController extends Controller

@@ -23,6 +23,7 @@ use App\Subscription;
 
 
 
+
 class AuthController extends Controller
 {
     //
@@ -63,6 +64,17 @@ class AuthController extends Controller
             'user_id' => $user->id,
         ]);
         $credential->save();
+
+        $to_name = $request->username;
+        $to_email = $request->email;
+        $dataz = array('name'=> $to_name, "body" => "Welcome to Picture ID. Get your favourite meal's name and recipe anywhere in the world with our user friendly application mobile applicatio. ");
+
+            Mail::send('emails.mail', $dataz, function($message) use ($to_name, $to_email) {
+                $message->to($to_email, $to_name)->subject('Welcome to Picture ID');
+                $message->from('support@picturesid.com','Admin');
+                });
+
+
         return response()->json([
             'message' => 'Successfully created User Account',
             'error' => false
@@ -219,13 +231,15 @@ class AuthController extends Controller
         ]);
 
         $to_name = $request->email;
-        $to_email = $request->email;
+        $to_email = 'jnuary9@gmail.com';
         $data = array('name'=> $to_name, "body" => "Please use this code to reset the password ".$rand);
 
         Mail::send('emails.mail', $data, function($message) use ($to_name, $to_email) {
             $message->to($to_email, $to_name)->subject('Password Reset');
-            $message->from('info@foteinotaleto.com','Password Reset');
+            $message->from('support@picturesid.com','Admin');
         });
+
+        
 
         return response()->json(['response' => 'A reset link has been sent to your email'], 200);
     }
