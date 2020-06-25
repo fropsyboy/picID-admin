@@ -241,7 +241,7 @@ class AuthController extends Controller
 
         
 
-        return response()->json(['error' => false, 'message' => 'A reset link has been sent to your email'], 200);
+        return response()->json(['error' => false, 'message' => 'A reset link has been sent to your email', 'code' => $rand], 200);
     }
 
     public function passwordUpdate(Request $request)
@@ -256,6 +256,24 @@ class AuthController extends Controller
         }
 
             User::where('email', $user->email)->update([
+                'password' => bcrypt($request->password),
+            ]);
+            return response()->json(['response' => 'Your password reset was successful ', 'error' => false], '200');
+
+    }
+
+    public function NewpasswordUpdate(Request $request)
+    {
+
+        $validator = Validator::make($request->all(), [
+            'password' => 'required|string',
+            'email' => 'required|string',
+        ]);
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors(), 'error' => true], 200);
+        }
+
+            User::where('email', $request->email)->update([
                 'password' => bcrypt($request->password),
             ]);
             return response()->json(['response' => 'Your password reset was successful ', 'error' => false], '200');
