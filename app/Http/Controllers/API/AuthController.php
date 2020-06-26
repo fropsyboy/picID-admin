@@ -66,7 +66,7 @@ class AuthController extends Controller
         $credential->save();
 
         $to_name = $request->username;
-        $to_email = "jnuary9@gmail.com";
+        $to_email = $request->email;
         $dataz = array('name'=> $to_name, "body" => "Welcome to Picture ID. Get your favourite meal's name and recipe anywhere in the world with our user friendly application mobile applicatio. ");
 
             Mail::send('emails.mail', $dataz, function($message) use ($to_name, $to_email) {
@@ -231,7 +231,7 @@ class AuthController extends Controller
         ]);
 
         $to_name = $request->email;
-        $to_email = "jnuary9@gmail.com";
+        $to_email = $request->email;
         $data = array('name'=> $to_name, "body" => "Please use this code to reset the password ".$rand);
 
         Mail::send('emails.mail', $data, function($message) use ($to_name, $to_email) {
